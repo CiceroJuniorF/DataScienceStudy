@@ -1,0 +1,72 @@
+version: '2.2'
+services:
+
+  nginx:
+    image: nginx
+    container_name: nginx_server
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data/nginx/nginx.conf:/etc/nginx/nginx.conf
+    links:
+      - elasticsearch
+      - kibana
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    container_name: elastic_server
+    environment:
+      - http.host=0.0.0.0
+      - xpack.security.enabled=true
+      - discovery.type=single-node
+    volumes:
+      - ./data/elasticsearch/data:/usr/share/elasticsearch/data
+      - ./data/elasticsearch/plugins:/usr/share/elasticsearch/plugins
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.5.4
+    container_name: kibana_server
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - XPACK_SECURITY_ENABLED=true
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWD=changeme
+      #- XPACK_GRAPH_ENABLED=true
+      - XPACK_WATCHER_ENABLED=true
+      - XPACK_ML_ENABLED=true
+      - XPACK_MONITORING_ENABLED=true
+      - XPACK_MONITORING_UI_CONTAINER_ELASTICSEARCH_ENABLED
+      #- SERVER_BASEPATH=/kibana
+      #- SERVER_REWRITEBASEPATH=false
+      #- SERVER_HOST=kibana
+    #volumes:
+    #  - ./data/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    #ports:
+    #  - 5601:5601
+    links:
+      - elasticsearch
+
+#  jenkins:
+#    image: jenkins/jenkins
+#    container_name: jenkins_server
+#    environment:
+#      - JENKINS_OPTS="--prefix=/jenkins"
+#    volumes:
+#      - ./data/jenkins:/var/jenkins_home
+#    ports:
+#      - 8083:8080
+#    #  - 50000:50000
+
+  neo4j:
+    image: neo4j:3.5.1
+    container_name: neo4j_server
+    volumes:
+      - ./data/neo4j:/data
+      - ./data/neo4j/dados:/var/lib/neo4j/import
+    ports:
+      - 7474:7474
+      - 7687:7687
+
